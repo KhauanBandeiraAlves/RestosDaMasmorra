@@ -1,0 +1,12 @@
+=== ArtTestScene diagnostic ===
+Root objects: 7
+Renderers found: 58
+Renderers with null mesh: 0
+Inactive renderer objects: 0
+Combined renderer bounds: Center: (5.75, 1.82, 5.75), Extents: (8.25, 2.18, 8.25)
+Camera GameObject: Isometric Test Camera, active=True, tag=MainCamera
+Camera position: (-6.21, 12.79, -6.21), rotation euler: (32.00, 45.00, 0.00)
+Camera orthographic: True, size: 9,503514
+Camera culling mask: -1
+Dot(cameraForward, dirToContentCenter) = 1,000 (should be > 0, ideally close to 1 if aimed well)
+Screenshot written to Docs/Validation/ArtTestScene.png
