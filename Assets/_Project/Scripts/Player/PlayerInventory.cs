@@ -56,17 +56,34 @@ namespace RestosDaMasmorra.Player
             return removed;
         }
 
-        public List<ItemInstance> RemovePortion(float fraction)
+        // Removes a fraction of the current items. With no rng, removal is deterministic
+        // (from the end of the list) for simple/predictable behavior. Pass an rng (e.g. for
+        // a defeat roll) to shuffle selection first — still fully deterministic for a given
+        // seed, which is what makes solo-defeat loss testable.
+        public List<ItemInstance> RemovePortion(float fraction, System.Random rng = null)
         {
             fraction = Mathf.Clamp01(fraction);
             int countToRemove = Mathf.CeilToInt(items.Count * fraction);
-            List<ItemInstance> removed = new List<ItemInstance>();
-            for (int i = 0; i < countToRemove && items.Count > 0; i++)
+
+            List<ItemInstance> pool = new List<ItemInstance>(items);
+            if (rng != null)
             {
-                int index = items.Count - 1;
-                removed.Add(items[index]);
-                items.RemoveAt(index);
+                for (int i = pool.Count - 1; i > 0; i--)
+                {
+                    int j = rng.Next(i + 1);
+                    (pool[i], pool[j]) = (pool[j], pool[i]);
+                }
             }
+
+            List<ItemInstance> removed = new List<ItemInstance>();
+            for (int i = 0; i < countToRemove && pool.Count > 0; i++)
+            {
+                ItemInstance instance = pool[pool.Count - 1];
+                pool.RemoveAt(pool.Count - 1);
+                items.Remove(instance);
+                removed.Add(instance);
+            }
+
             if (removed.Count > 0) InventoryChanged?.Invoke();
             return removed;
         }
