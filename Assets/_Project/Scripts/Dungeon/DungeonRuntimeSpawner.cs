@@ -73,14 +73,14 @@ namespace RestosDaMasmorra.Dungeon
 
             if (playerTransform != null) playerTransform.position = spawnPos;
 
-            GameObject portalGO = new GameObject("ReturnToBase");
-            portalGO.transform.SetParent(transform, false);
-            portalGO.transform.position = portalPos;
-            BoxCollider portalCollider = portalGO.AddComponent<BoxCollider>();
-            portalCollider.isTrigger = true;
-            portalCollider.size = new Vector3(2f, 2f, 2f);
-            ScenePortal portal = portalGO.AddComponent<ScenePortal>();
-            portal.Configure(returnSceneName, "Voltar para a Base");
+            GameObject extractionGO = new GameObject("ExtractionPoint");
+            extractionGO.transform.SetParent(transform, false);
+            extractionGO.transform.position = portalPos;
+            BoxCollider extractionCollider = extractionGO.AddComponent<BoxCollider>();
+            extractionCollider.isTrigger = true;
+            extractionCollider.size = new Vector3(2f, 2f, 2f);
+            ExtractionPoint extractionPoint = extractionGO.AddComponent<ExtractionPoint>();
+            extractionPoint.Configure(returnSceneName);
 
             BakeNavMesh();
             SpawnParty(spawnPos, actualSeed);
