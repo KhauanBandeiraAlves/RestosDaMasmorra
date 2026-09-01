@@ -256,12 +256,9 @@ namespace RestosDaMasmorra.EditorTools
             GameObject camGO = new GameObject("Isometric Camera");
             camGO.tag = "MainCamera";
             Camera cam = camGO.AddComponent<Camera>();
-            cam.orthographic = true;
-            cam.orthographicSize = 8f;
-            camGO.transform.rotation = Quaternion.Euler(32f, 45f, 0f);
             IsoCameraFollow follow = camGO.AddComponent<IsoCameraFollow>();
             follow.SetTarget(playerTransform);
-            camGO.transform.position = playerTransform.position + new Vector3(-6.21f, 12.79f, -6.21f);
+            follow.ApplyRotationAndZoom(); // uses the project-default pitch/yaw/distance/orthographicSize
 
             camGO.AddComponent<AudioListener>();
 

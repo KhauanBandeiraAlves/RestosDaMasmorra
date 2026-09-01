@@ -80,12 +80,15 @@ namespace RestosDaMasmorra.EditorTools
                 return;
             }
 
-            // IsoCameraFollow only repositions the camera in LateUpdate (Play Mode); since
-            // this tool runs in Edit Mode, mirror that offset once manually before capturing.
+            // IsoCameraFollow is [ExecuteAlways] and repositions itself every LateUpdate,
+            // including in Edit Mode, but force one explicit apply here so the capture
+            // below is guaranteed to use the current preset even if no frame ticked yet.
+            IsoCameraFollow follow = cam.GetComponent<IsoCameraFollow>();
             GameObject player = GameObject.FindGameObjectWithTag("Player");
-            if (player != null)
+            if (follow != null && player != null)
             {
-                cam.transform.position = player.transform.position + new Vector3(-6.21f, 12.79f, -6.21f);
+                follow.SetTarget(player.transform);
+                follow.ApplyRotationAndZoom();
             }
 
             SceneValidationTool.RenderCameraToPng(cam, "Docs/Validation/PrototypeDungeon.png", 1280, 720);
