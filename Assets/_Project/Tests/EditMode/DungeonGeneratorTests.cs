@@ -246,5 +246,43 @@ namespace RestosDaMasmorra.Tests.EditMode
             Assert.IsFalse(r.Success);
             Assert.IsNotEmpty(r.FailureReason);
         }
+
+        [Test]
+        public void MainPath_StartsAtEntrance_EndsAtBoss_BranchesAreExcluded()
+        {
+            DungeonDefinition def = MakeStandardDefinition();
+            DungeonLayoutResult r = DungeonGenerator.Generate(def, 321);
+
+            Assert.IsTrue(r.Success);
+            Assert.AreEqual(r.Entrance, r.MainPath[0]);
+            Assert.AreEqual(r.Boss, r.MainPath[r.MainPath.Count - 1]);
+
+            foreach (PlacedRoom room in r.MainPath) Assert.IsTrue(room.IsMainPath);
+
+            int branchRoomCount = r.Rooms.Count(x => !x.IsMainPath);
+            Assert.AreEqual(r.BranchCount, branchRoomCount);
+
+            // No branch room should ever appear in the main path sequence.
+            foreach (PlacedRoom room in r.Rooms.Where(x => !x.IsMainPath))
+            {
+                Assert.IsFalse(r.MainPath.Contains(room));
+            }
+        }
+
+        [Test]
+        public void MainPath_IsContiguousChainOfConnections()
+        {
+            DungeonDefinition def = MakeStandardDefinition();
+            DungeonLayoutResult r = DungeonGenerator.Generate(def, 654);
+
+            Assert.IsTrue(r.Success);
+            for (int i = 0; i < r.MainPath.Count - 1; i++)
+            {
+                PlacedRoom a = r.MainPath[i];
+                PlacedRoom b = r.MainPath[i + 1];
+                bool connected = a.Connections.Any(c => c.other == b);
+                Assert.IsTrue(connected, $"Main path room {i} is not directly connected to room {i + 1}.");
+            }
+        }
     }
 }

@@ -44,6 +44,11 @@ namespace RestosDaMasmorra.EditorTools
             bool bossReachable = DungeonGenerator.IsBossReachable(layout);
             bool noOverlap = !DungeonGenerator.HasAnyOverlap(layout.Rooms, out string overlapReason);
 
+            bool partyOk = spawner.Party != null && spawner.Party.Count == 3;
+            bool enemiesOk = spawner.Enemies != null && spawner.Enemies.Count > 0;
+
+            bool overallPass = hasController && hasMovement && bossReachable && noOverlap && partyOk && enemiesOk;
+
             Debug.Log(
                 "DungeonPlaytestTool smoke test:\n" +
                 $"  Rooms generated: {layout.Rooms.Count}\n" +
@@ -51,7 +56,9 @@ namespace RestosDaMasmorra.EditorTools
                 $"  Player distance from Entrance origin: {distanceFromEntrance:F2}m (should be small, player spawns inside the Entrance room)\n" +
                 $"  Boss reachable: {bossReachable}\n" +
                 $"  No room overlaps: {noOverlap} {(noOverlap ? "" : "(" + overlapReason + ")")}\n" +
-                $"  RESULT: {(hasController && hasMovement && bossReachable && noOverlap ? "PASS" : "FAIL")}");
+                $"  Party spawned: {partyOk} ({spawner.Party?.Count ?? 0}/3)\n" +
+                $"  Enemies spawned: {enemiesOk} ({spawner.Enemies?.Count ?? 0})\n" +
+                $"  RESULT: {(overallPass ? "PASS" : "FAIL")}");
         }
 
         public static void ScreenshotGeneratedPrototypeDungeon()
