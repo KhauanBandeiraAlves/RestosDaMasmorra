@@ -57,6 +57,33 @@ namespace RestosDaMasmorra.EditorTools
             Debug.Log("CameraPresetTool: captured top-down presets A/B/C/D.");
         }
 
+        // Pitch-only comparison at fixed yaw 0 / orthoSize: 70 read as near-bird's-eye (lost
+        // the player's front/body, chest/table volume flattened), so re-testing a lower
+        // pitch band with everything else held constant for a fair side-by-side.
+        public static void CaptureStraightPitchPresets()
+        {
+            EditorSceneManager.OpenScene("Assets/_Project/Scenes/PrototypeBase.unity", OpenSceneMode.Single);
+
+            GameObject player = GameObject.FindGameObjectWithTag("Player");
+            Camera cam = Camera.main;
+            IsoCameraFollow follow = cam != null ? cam.GetComponent<IsoCameraFollow>() : null;
+            if (player == null || cam == null || follow == null)
+            {
+                Debug.LogError("CameraPresetTool: missing Player/Camera/IsoCameraFollow in PrototypeBase.unity");
+                return;
+            }
+            follow.SetTarget(player.transform);
+
+            const float orthoSize = 6.5f;
+            const float distance = 14f;
+            Capture(follow, cam, "Straight_55", 55f, 0f, distance, orthoSize, "Docs/Validation/Camera_Straight_55.png");
+            Capture(follow, cam, "Straight_58", 58f, 0f, distance, orthoSize, "Docs/Validation/Camera_Straight_58.png");
+            Capture(follow, cam, "Straight_60", 60f, 0f, distance, orthoSize, "Docs/Validation/Camera_Straight_60.png");
+            Capture(follow, cam, "Straight_62", 62f, 0f, distance, orthoSize, "Docs/Validation/Camera_Straight_62.png");
+
+            Debug.Log("CameraPresetTool: captured straight top-down pitch presets 55/58/60/62.");
+        }
+
         static void Capture(IsoCameraFollow follow, Camera cam, string label, float pitch, float yaw, float distance, float orthoSize, string path)
         {
             follow.ApplyPreset(pitch, yaw, distance, orthoSize);
@@ -70,15 +97,14 @@ namespace RestosDaMasmorra.EditorTools
             ApplyToScene("Assets/_Project/Scenes/PrototypeDungeon.unity", pitch, yaw, distance, orthoSize);
         }
 
-        // Chosen preset (see Docs/Validation/Camera_TopDown_*.png comparison): straight
-        // top-down (yaw 0) so room walls stay axis-aligned on screen instead of reading as a
-        // rotated isometric diamond. Preset D (pitch 70, orthoSize 7.0) was picked over
-        // A/B/C because it's the first one wide enough to show the room's rectangular
-        // boundary on screen (A/B were zoomed in so tight the walls never entered frame),
-        // while pitch 70 keeps it closer to true top-down without losing wall volume.
+        // Chosen preset (see Docs/Validation/Camera_Straight_*.png comparison): pitch 70 read
+        // as near-bird's-eye -- lost the player's front/body, chest/table volume flattened.
+        // Re-tested 55/58/60/62 at yaw 0, orthoSize 6.5, distance 14 (fixed for a fair
+        // comparison); 58 keeps the clearest front-of-character read while still being high
+        // enough to hide the horizon and read as a straight top-down room.
         public static void ApplyChosenFinal()
         {
-            ApplyFinalPreset(70f, 0f, 14f, 7.0f);
+            ApplyFinalPreset(58f, 0f, 14f, 6.5f);
             CaptureFinal();
         }
 

@@ -12,10 +12,10 @@ namespace RestosDaMasmorra.Player
     public class IsoCameraFollow : MonoBehaviour
     {
         [SerializeField] Transform target;
-        [SerializeField] float pitch = 70f;
+        [SerializeField] float pitch = 58f;
         [SerializeField] float yaw = 0f;
         [SerializeField] float distance = 14f;
-        [SerializeField] float orthographicSize = 7.0f;
+        [SerializeField] float orthographicSize = 6.5f;
         [SerializeField] float followSmoothTime = 0.12f;
 
         Vector3 followVelocity;
