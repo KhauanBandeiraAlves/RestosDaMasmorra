@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fea3c1cba95d8745b36af26926a80dd, type: 3}
+  m_Name: SkeletonLoot
+  m_EditorClassIdentifier: RestosDaMasmorra::RestosDaMasmorra.Items.LootDropTable
+  entries:
+  - item: {fileID: 11400000, guid: 15fda7986d39b8f4b9fb9619077e8c90, type: 2}
+    dropChance: 0.7
+    minCount: 1
+    maxCount: 2
+  - item: {fileID: 11400000, guid: 4ee8be58e0b164b449476af9c220a8d4, type: 2}
+    dropChance: 0.6
+    minCount: 1
+    maxCount: 3
+  - item: {fileID: 11400000, guid: 0f534d73d69132743a9ac9ce31fe29b5, type: 2}
+    dropChance: 0.4
+    minCount: 1
+    maxCount: 1

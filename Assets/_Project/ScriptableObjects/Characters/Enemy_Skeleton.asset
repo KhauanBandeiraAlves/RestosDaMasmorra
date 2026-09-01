@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f229980995b03341834099b6434e27e, type: 3}
+  m_Name: Enemy_Skeleton
+  m_EditorClassIdentifier: RestosDaMasmorra::RestosDaMasmorra.Enemies.EnemyDefinition
+  displayName: Skeleton Warrior
+  health: 10
+  moveSpeed: 2.6
+  attackDamage: 3
+  attackRange: 1.4
+  attackCooldown: 1.4
+  visualPrefab: {fileID: 919132149155446097, guid: 5af48e511b0d4ac4dace7dae93571018, type: 3}
+  lootTable: {fileID: 11400000, guid: 12c1c3bb3958d4f41b2c8a104923c86e, type: 2}

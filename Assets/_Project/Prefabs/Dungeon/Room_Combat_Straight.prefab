@@ -147,6 +147,9 @@ MonoBehaviour:
   maxDepth: 99
   canRepeat: 1
   size: {x: 16, y: 16}
+  spawnsEnemies: 1
+  minEnemies: 2
+  maxEnemies: 4
 --- !u!1 &8922645037427674611
 GameObject:
   m_ObjectHideFlags: 0

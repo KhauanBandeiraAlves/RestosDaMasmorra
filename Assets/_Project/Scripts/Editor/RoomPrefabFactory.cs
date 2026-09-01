@@ -23,7 +23,10 @@ namespace RestosDaMasmorra.EditorTools
             float weight = 1f,
             int minDepth = 0,
             int maxDepth = 99,
-            bool canRepeat = true)
+            bool canRepeat = true,
+            bool spawnsEnemies = false,
+            int minEnemies = 0,
+            int maxEnemies = 0)
         {
             int tilesX = Mathf.RoundToInt(size.x / Tile);
             int tilesZ = Mathf.RoundToInt(size.y / Tile);
@@ -34,6 +37,7 @@ namespace RestosDaMasmorra.EditorTools
 
             GameObject root = new GameObject(Path.GetFileNameWithoutExtension(savePath));
             RoomDefinition def = root.AddComponent<RoomDefinition>();
+            def.EditorConfigureSpawn(spawnsEnemies, minEnemies, maxEnemies);
             SetPrivate(def, "roomType", roomType);
             SetPrivate(def, "weight", weight);
             SetPrivate(def, "minDepth", minDepth);

@@ -18,6 +18,11 @@ namespace RestosDaMasmorra.Dungeon
         // Kept in multiples of the 4m KayKit module.
         [SerializeField] Vector2 size = new Vector2(12f, 12f);
 
+        // Content spawn config, data-driven per room (not hardcoded by prefab name).
+        [SerializeField] bool spawnsEnemies;
+        [SerializeField] int minEnemies;
+        [SerializeField] int maxEnemies;
+
         public RoomType RoomType => roomType;
         public string Theme => theme;
         public float Weight => weight;
@@ -25,8 +30,18 @@ namespace RestosDaMasmorra.Dungeon
         public int MaxDepth => maxDepth;
         public bool CanRepeat => canRepeat;
         public Vector2 Size => size;
+        public bool SpawnsEnemies => spawnsEnemies;
+        public int MinEnemies => minEnemies;
+        public int MaxEnemies => maxEnemies;
 
         public RoomSocket[] GetSockets() => GetComponentsInChildren<RoomSocket>(true);
+
+        public void EditorConfigureSpawn(bool spawns, int min, int max)
+        {
+            spawnsEnemies = spawns;
+            minEnemies = min;
+            maxEnemies = max;
+        }
 
         void OnDrawGizmosSelected()
         {

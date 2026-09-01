@@ -152,6 +152,12 @@ MonoBehaviour:
   seed: 12345
   playerTransform: {fileID: 2031975091}
   returnSceneName: PrototypeBase
+  partyDefinitions:
+  - {fileID: 11400000, guid: a9842e625ae5c2d438a386d6b37b9e19, type: 2}
+  - {fileID: 11400000, guid: df28837170173ea46918c6d79e440a9f, type: 2}
+  - {fileID: 11400000, guid: 9464e25ec12dfe64c80a6774ac3c1b51, type: 2}
+  enemyDefinition: {fileID: 11400000, guid: 70a200f991be3b64ababf0dc64255084, type: 2}
+  brokenWeaponItem: {fileID: 11400000, guid: 36f62b9ae76cf5f4fa3535651f28fe72, type: 2}
 --- !u!4 &110705503
 Transform:
   m_ObjectHideFlags: 0
@@ -400,11 +406,11 @@ MonoBehaviour:
   stamina: {fileID: 2031975090}
   inventory: {fileID: 2031975089}
   interaction: {fileID: 2031975088}
+  suspicion: {fileID: 0}
   staminaText: {fileID: 1933593780}
   backpackText: {fileID: 1918000261}
   interactionText: {fileID: 1619561025}
   suspicionText: {fileID: 491496866}
-  suspicion: 0
 --- !u!1 &1081617766
 GameObject:
   m_ObjectHideFlags: 0

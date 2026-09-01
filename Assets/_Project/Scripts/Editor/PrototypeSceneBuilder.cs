@@ -78,6 +78,7 @@ namespace RestosDaMasmorra.EditorTools
             root.AddComponent<PlayerMovement>();
             root.AddComponent<PlayerInteraction>();
             root.AddComponent<PlayerInventory>();
+            root.AddComponent<PlayerSuspicion>();
 
             GameObject visualPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AdvChar + "Knight.fbx");
             if (visualPrefab != null)
@@ -280,6 +281,7 @@ namespace RestosDaMasmorra.EditorTools
             SetPrivateField(hud, "stamina", playerInstance.GetComponent<PlayerStamina>());
             SetPrivateField(hud, "inventory", playerInstance.GetComponent<PlayerInventory>());
             SetPrivateField(hud, "interaction", playerInstance.GetComponent<PlayerInteraction>());
+            SetPrivateField(hud, "suspicion", playerInstance.GetComponent<PlayerSuspicion>());
             SetPrivateField(hud, "staminaText", staminaText);
             SetPrivateField(hud, "backpackText", backpackText);
             SetPrivateField(hud, "interactionText", interactionText);
