@@ -13,12 +13,20 @@ namespace RestosDaMasmorra.Core
 
         void Start()
         {
+            Debug.Log("BOOTSTRAP START");
+
             if (GameSession.Instance == null)
             {
                 GameObject sessionGO = new GameObject("GameSession");
                 sessionGO.AddComponent<GameSession>().Initialize();
+                Debug.Log("GAME SESSION CREATED");
+            }
+            else
+            {
+                Debug.Log("GAME SESSION ALREADY EXISTS (reused)");
             }
 
+            Debug.Log($"LOADING {firstSceneName.ToUpperInvariant()}");
             SceneManager.LoadScene(firstSceneName);
         }
     }
