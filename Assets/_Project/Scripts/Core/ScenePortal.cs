@@ -13,6 +13,14 @@ namespace RestosDaMasmorra.Core
         public string InteractionPrompt => $"E - {promptLabel}";
         public bool CanInteract => true;
 
+        // Runtime-safe configuration (no UnityEditor dependency), used by code that spawns
+        // portals procedurally, e.g. DungeonRuntimeSpawner.
+        public void Configure(string sceneName, string label)
+        {
+            targetSceneName = sceneName;
+            promptLabel = label;
+        }
+
         public void Interact(GameObject interactor)
         {
             SceneManager.LoadScene(targetSceneName);

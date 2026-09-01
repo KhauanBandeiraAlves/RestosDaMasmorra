@@ -236,7 +236,7 @@ namespace RestosDaMasmorra.EditorTools
             SetPrivateField(worldItem, "ownership", ItemOwnership.Discarded);
         }
 
-        static void SetupLightingAndCamera(Transform playerTransform, out Canvas canvas)
+        internal static void SetupLightingAndCamera(Transform playerTransform, out Canvas canvas)
         {
             GameObject dirLightGO = new GameObject("Directional Light");
             Light dirLight = dirLightGO.AddComponent<Light>();
@@ -266,7 +266,7 @@ namespace RestosDaMasmorra.EditorTools
             canvasGO.AddComponent<GraphicRaycaster>();
         }
 
-        static void WirePlayerHud(Canvas canvas, GameObject playerInstance)
+        internal static void WirePlayerHud(Canvas canvas, GameObject playerInstance)
         {
             GameObject hudGO = new GameObject("PlayerHUD");
             hudGO.transform.SetParent(canvas.transform, false);
@@ -338,7 +338,7 @@ namespace RestosDaMasmorra.EditorTools
             return b;
         }
 
-        static void SetPrivateField(Object target, string fieldName, object value)
+        internal static void SetPrivateField(Object target, string fieldName, object value)
         {
             SerializedObject so = new SerializedObject(target);
             SerializedProperty prop = so.FindProperty(fieldName);
