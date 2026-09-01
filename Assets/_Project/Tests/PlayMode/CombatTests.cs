@@ -66,6 +66,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Adventurer_SelectsNearestEnemy()
         {
             ground = CombatTestUtil.CreateFlatGroundWithNavMesh();
@@ -96,6 +97,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Enemy_SelectsNearestAdventurer_OverPlayer()
         {
             ground = CombatTestUtil.CreateFlatGroundWithNavMesh();
@@ -121,6 +123,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator MeleeAdventurer_ClosesDistance_BeforeAttacking()
         {
             ground = CombatTestUtil.CreateFlatGroundWithNavMesh();
@@ -142,6 +145,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator RangedAdventurer_AttacksWithoutFullyClosingDistance()
         {
             ground = CombatTestUtil.CreateFlatGroundWithNavMesh();
@@ -164,6 +168,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Enemy_Dies_WhenHealthReachesZero_AndStopsAttacking()
         {
             ground = CombatTestUtil.CreateFlatGroundWithNavMesh();
@@ -185,6 +190,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator EnemyDeath_DropsLootFromTable()
         {
             ground = CombatTestUtil.CreateFlatGroundWithNavMesh();

@@ -98,6 +98,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator PartyAndEnemies_SimulateForAWhile_NoExceptions_AndCombatHappens()
         {
             DungeonDefinition def = MakeDefinitionWithCombatRooms(5, 7, 2, 3);
@@ -143,6 +144,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator StressTest_ManyEnemiesAndWorldItems_NoExceptions()
         {
             DungeonDefinition def = MakeDefinitionWithCombatRooms(6, 8, 4, 6);

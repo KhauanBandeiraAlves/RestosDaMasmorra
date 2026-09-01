@@ -32,6 +32,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Player_SpawnsWithRequiredComponents()
         {
             GameObject player = CreatePlayer();
@@ -46,6 +47,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Player_MovesForward_WhenGivenForwardInput()
         {
             GameObject player = CreatePlayer();
@@ -67,6 +69,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Player_StaminaDrainsWhileRunning()
         {
             GameObject player = CreatePlayer();
@@ -85,6 +88,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Player_StaminaRegeneratesAfterRunning()
         {
             GameObject player = CreatePlayer();
@@ -101,6 +105,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Player_ZeroStamina_StillAllowsWalking()
         {
             GameObject player = CreatePlayer();
@@ -127,6 +132,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
     public class WorldItemPickupTests
     {
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Player_CanPickUpWorldItem_WhenInventoryHasSpace()
         {
             GameObject playerGO = new GameObject("TestPlayer");
@@ -151,6 +157,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Player_CannotPickUpWorldItem_WhenInventoryIsFull()
         {
             GameObject playerGO = new GameObject("TestPlayer");

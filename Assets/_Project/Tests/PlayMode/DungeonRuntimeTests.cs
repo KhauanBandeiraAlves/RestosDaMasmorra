@@ -57,6 +57,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator GeneratedDungeon_BuildsWithoutErrors_AndHasWalkableColliders()
         {
             GameObject entrance = MakeRoom(RoomType.Entrance, new Vector2(12, 12), new[] { SocketDirection.North });
@@ -89,6 +90,7 @@ namespace RestosDaMasmorra.Tests.PlayMode
         }
 
         [UnityTest]
+        [Timeout(20000)]
         public IEnumerator Boss_IsReachable_ThroughConnectionGraph()
         {
             GameObject entrance = MakeRoom(RoomType.Entrance, new Vector2(12, 12), new[] { SocketDirection.North });
