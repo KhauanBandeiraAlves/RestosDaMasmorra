@@ -11,6 +11,7 @@ namespace RestosDaMasmorra.Items
         [SerializeField, Min(1)] int slotSize = 1;
         [SerializeField, Min(0)] int baseValue = 0;
         [SerializeField] string materialType = "";
+        [SerializeField] GameObject visualPrefab;
 
         public string Id => id;
         public string DisplayName => displayName;
@@ -18,5 +19,8 @@ namespace RestosDaMasmorra.Items
         public int SlotSize => slotSize;
         public int BaseValue => baseValue;
         public string MaterialType => materialType;
+        public GameObject VisualPrefab => visualPrefab;
+
+        public void EditorSetVisual(GameObject prefab) => visualPrefab = prefab;
     }
 }

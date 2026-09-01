@@ -4,28 +4,30 @@ using RestosDaMasmorra.Player;
 
 namespace RestosDaMasmorra.UI
 {
-    // Minimal, discreet dungeon HUD: stamina, backpack usage, current interaction prompt.
+    // Minimal, discreet dungeon HUD: stamina, backpack usage, current interaction prompt,
+    // suspicion (only shown once > 0).
     public class PlayerHUD : MonoBehaviour
     {
         [SerializeField] PlayerStamina stamina;
         [SerializeField] PlayerInventory inventory;
         [SerializeField] PlayerInteraction interaction;
+        [SerializeField] PlayerSuspicion suspicion;
 
         [SerializeField] Text staminaText;
         [SerializeField] Text backpackText;
         [SerializeField] Text interactionText;
         [SerializeField] Text suspicionText;
 
-        [SerializeField] int suspicion;
-
         void OnEnable()
         {
             if (stamina != null) stamina.StaminaChanged += OnStaminaChanged;
             if (inventory != null) inventory.InventoryChanged += OnInventoryChanged;
             if (interaction != null) interaction.InteractableChanged += OnInteractableChanged;
+            if (suspicion != null) suspicion.Changed += SetSuspicion;
 
             OnInventoryChanged();
             OnInteractableChanged(null);
+            SetSuspicion(suspicion != null ? suspicion.Value : 0);
         }
 
         void OnDisable()
@@ -33,6 +35,7 @@ namespace RestosDaMasmorra.UI
             if (stamina != null) stamina.StaminaChanged -= OnStaminaChanged;
             if (inventory != null) inventory.InventoryChanged -= OnInventoryChanged;
             if (interaction != null) interaction.InteractableChanged -= OnInteractableChanged;
+            if (suspicion != null) suspicion.Changed -= SetSuspicion;
         }
 
         void OnStaminaChanged(float current, float max)
@@ -54,9 +57,8 @@ namespace RestosDaMasmorra.UI
 
         public void SetSuspicion(int value)
         {
-            suspicion = value;
             if (suspicionText != null)
-                suspicionText.text = suspicion > 0 ? $"Suspicion: {suspicion}" : "";
+                suspicionText.text = value > 0 ? $"Suspicion: {value}" : "";
         }
     }
 }
