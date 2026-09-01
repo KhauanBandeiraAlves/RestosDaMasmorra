@@ -128,6 +128,13 @@ namespace RestosDaMasmorra.Characters
         void HandleDeath()
         {
             agent.isStopped = true;
+
+            // The fallen adventurer's own broken equipment is left behind for the player.
+            if (brokenWeaponItem != null)
+            {
+                LootSpawner.SpawnDrop(brokenWeaponItem, transform.position, ItemOwnership.Discarded);
+            }
+
             enabled = false;
         }
     }

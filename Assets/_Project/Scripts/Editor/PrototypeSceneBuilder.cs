@@ -80,6 +80,11 @@ namespace RestosDaMasmorra.EditorTools
             root.AddComponent<PlayerInventory>();
             root.AddComponent<PlayerSuspicion>();
 
+            RestosDaMasmorra.Characters.Combat.Health health = root.AddComponent<RestosDaMasmorra.Characters.Combat.Health>();
+            health.SetMaxHealth(20f);
+            root.AddComponent<PlayerCombatant>();
+            root.AddComponent<PlayerLifeController>();
+
             GameObject visualPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AdvChar + "Knight.fbx");
             if (visualPrefab != null)
             {
@@ -262,7 +267,13 @@ namespace RestosDaMasmorra.EditorTools
 
             GameObject canvasGO = new GameObject("HUD Canvas");
             canvas = canvasGO.AddComponent<Canvas>();
-            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            // Screen Space - Camera (not Overlay): Overlay canvases render independently of
+            // any camera and are invisible to Camera.Render()-to-RenderTexture, which is how
+            // every validation screenshot in this project is captured — so the HUD would
+            // never show up in one. Tying it to the main camera keeps it part of that output.
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = cam;
+            canvas.planeDistance = 1f;
             canvasGO.AddComponent<CanvasScaler>();
             canvasGO.AddComponent<GraphicRaycaster>();
         }
@@ -273,15 +284,18 @@ namespace RestosDaMasmorra.EditorTools
             hudGO.transform.SetParent(canvas.transform, false);
             PlayerHUD hud = hudGO.AddComponent<PlayerHUD>();
 
+            Text healthText = CreateHudText(canvas.transform, "HealthText", new Vector2(-260, 5));
             Text staminaText = CreateHudText(canvas.transform, "StaminaText", new Vector2(-260, -20));
             Text backpackText = CreateHudText(canvas.transform, "BackpackText", new Vector2(-260, -45));
             Text interactionText = CreateHudText(canvas.transform, "InteractionText", new Vector2(0, 60), TextAnchor.LowerCenter);
             Text suspicionText = CreateHudText(canvas.transform, "SuspicionText", new Vector2(-260, -70));
 
+            SetPrivateField(hud, "health", playerInstance.GetComponent<RestosDaMasmorra.Characters.Combat.Health>());
             SetPrivateField(hud, "stamina", playerInstance.GetComponent<PlayerStamina>());
             SetPrivateField(hud, "inventory", playerInstance.GetComponent<PlayerInventory>());
             SetPrivateField(hud, "interaction", playerInstance.GetComponent<PlayerInteraction>());
             SetPrivateField(hud, "suspicion", playerInstance.GetComponent<PlayerSuspicion>());
+            SetPrivateField(hud, "healthText", healthText);
             SetPrivateField(hud, "staminaText", staminaText);
             SetPrivateField(hud, "backpackText", backpackText);
             SetPrivateField(hud, "interactionText", interactionText);

@@ -14,6 +14,10 @@ GameObject:
   - component: {fileID: 1625791348520964956}
   - component: {fileID: 9010992616433310889}
   - component: {fileID: 3570936942826837348}
+  - component: {fileID: 2113857866736361588}
+  - component: {fileID: 1929543542301702523}
+  - component: {fileID: 6564369307503028172}
+  - component: {fileID: 3330924260666700842}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -125,6 +129,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: RestosDaMasmorra::RestosDaMasmorra.Player.PlayerInventory
   capacity: 10
+--- !u!114 &2113857866736361588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8233405959327010909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fbeeef6f777b36f4bbe3156eeae912ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RestosDaMasmorra::RestosDaMasmorra.Player.PlayerSuspicion
+--- !u!114 &1929543542301702523
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8233405959327010909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8cf093f625f3e54b89915beb91f4909, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RestosDaMasmorra::RestosDaMasmorra.Characters.Combat.Health
+  maxHealth: 20
+--- !u!114 &6564369307503028172
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8233405959327010909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d2f819f518617d04093dd913451fc76a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RestosDaMasmorra::RestosDaMasmorra.Player.PlayerCombatant
+--- !u!114 &3330924260666700842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8233405959327010909}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df687837541d0b340bec434674e593fd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: RestosDaMasmorra::RestosDaMasmorra.Player.PlayerLifeController
+  health: {fileID: 0}
+  inventory: {fileID: 0}
+  returnSceneName: PrototypeBase
 --- !u!1001 &600381519284443270
 PrefabInstance:
   m_ObjectHideFlags: 0

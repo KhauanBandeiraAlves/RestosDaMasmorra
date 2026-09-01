@@ -5,9 +5,11 @@ using RestosDaMasmorra.Items;
 
 namespace RestosDaMasmorra.Enemies
 {
-    // Prioritizes the nearest living adventurer; only chases the player if no adventurer
-    // is in range. The player has no combat/health system yet, so "chasing" the player is
-    // just movement — no damage is dealt to them at this stage.
+    // Targets the nearest living Team.Party combatant. The player is registered as a
+    // Team.Party combatant too (see PlayerCombatant), so this naturally prioritizes
+    // whichever is closer — in practice the adventurers, since they lead — and only ends
+    // up on the player when no adventurer is nearby, without a separate hardcoded
+    // "player fallback" path.
     [RequireComponent(typeof(NavMeshAgent))]
     [RequireComponent(typeof(Health))]
     public class EnemyController : MonoBehaviour, ICombatant
@@ -18,7 +20,6 @@ namespace RestosDaMasmorra.Enemies
         Health health;
         EnemyDefinition definition;
         ICombatant target;
-        Transform playerFallback;
         float attackTimer;
         System.Random rng;
         bool lootDropped;
@@ -49,9 +50,6 @@ namespace RestosDaMasmorra.Enemies
             health.SetMaxHealth(def.Health);
             agent.speed = def.MoveSpeed;
 
-            GameObject playerGO = GameObject.FindGameObjectWithTag("Player");
-            if (playerGO != null) playerFallback = playerGO.transform;
-
             health.Died += HandleDeath;
         }
 
@@ -70,27 +68,7 @@ namespace RestosDaMasmorra.Enemies
                 return;
             }
 
-            ChasePlayerOrIdle();
-        }
-
-        void ChasePlayerOrIdle()
-        {
-            if (playerFallback == null)
-            {
-                agent.isStopped = true;
-                return;
-            }
-
-            float dist = Vector3.Distance(transform.position, playerFallback.position);
-            if (dist <= detectionRadius)
-            {
-                agent.isStopped = false;
-                agent.SetDestination(playerFallback.position);
-            }
-            else
-            {
-                agent.isStopped = true;
-            }
+            agent.isStopped = true;
         }
 
         void Fight()
