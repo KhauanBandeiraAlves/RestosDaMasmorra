@@ -15,7 +15,8 @@ namespace RestosDaMasmorra.EditorTools
     {
         const string DefinitionPath = "Assets/_Project/ScriptableObjects/Dungeon/PrototypeDungeonDefinition.asset";
         const string ReportPath = "Docs/Validation/DungeonGenerationReport.md";
-        const int SeedCount = 1000;
+        const int SeedCount = 5000;
+        const float PreviousAverageBranches = 0.22f;
 
         public static void RunSeedValidation()
         {
@@ -92,9 +93,29 @@ namespace RestosDaMasmorra.EditorTools
             sb.AppendLine($"- Average rooms per dungeon: {(roomCounts.Count > 0 ? roomCounts.Average() : 0):F2}");
             sb.AppendLine($"- Min rooms: {(roomCounts.Count > 0 ? roomCounts.Min() : 0)}");
             sb.AppendLine($"- Max rooms: {(roomCounts.Count > 0 ? roomCounts.Max() : 0)}");
-            sb.AppendLine($"- Average branches: {(branchCounts.Count > 0 ? branchCounts.Average() : 0):F2}");
+            float avgBranches = branchCounts.Count > 0 ? (float)branchCounts.Average() : 0;
+            sb.AppendLine($"- Average branches: {avgBranches:F2}");
             sb.AppendLine($"- Total generation time: {sw.Elapsed.TotalSeconds:F3}s ({sw.Elapsed.TotalMilliseconds / SeedCount:F3}ms/seed avg)");
             sb.AppendLine($"- Determinism spot-checks: {determinismChecks} (failures: {determinismFailures})");
+            sb.AppendLine();
+
+            sb.AppendLine("## Branch variety (Phase B.1)");
+            sb.AppendLine();
+            sb.AppendLine("| | Average branches/dungeon |");
+            sb.AppendLine("|---|---|");
+            sb.AppendLine($"| ANTES (Phase B) | {PreviousAverageBranches:F2} |");
+            sb.AppendLine($"| DEPOIS (Phase B.1) | {avgBranches:F2} |");
+            sb.AppendLine();
+            int b0 = branchCounts.Count(b => b == 0);
+            int b1 = branchCounts.Count(b => b == 1);
+            int b2 = branchCounts.Count(b => b == 2);
+            int bOther = branchCounts.Count - b0 - b1 - b2;
+            sb.AppendLine("Branch count distribution:");
+            sb.AppendLine();
+            sb.AppendLine($"- 0 branches: {b0} ({(b0 / (float)branchCounts.Count * 100f):F1}%)");
+            sb.AppendLine($"- 1 branch: {b1} ({(b1 / (float)branchCounts.Count * 100f):F1}%)");
+            sb.AppendLine($"- 2 branches: {b2} ({(b2 / (float)branchCounts.Count * 100f):F1}%)");
+            if (bOther > 0) sb.AppendLine($"- other: {bOther}");
             sb.AppendLine();
 
             if (failures.Count > 0)
@@ -109,7 +130,7 @@ namespace RestosDaMasmorra.EditorTools
             }
             else
             {
-                sb.AppendLine("No problem seeds found. 1000/1000 valid.");
+                sb.AppendLine($"No problem seeds found. {SeedCount}/{SeedCount} valid.");
             }
 
             Directory.CreateDirectory("Docs/Validation");

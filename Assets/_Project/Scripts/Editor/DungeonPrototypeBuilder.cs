@@ -31,7 +31,13 @@ namespace RestosDaMasmorra.EditorTools
                 RoomType.Combat, new Vector2(16, 16), new[] { SocketDirection.South, SocketDirection.North }, weight: 1f);
 
             GameObject combatBranch = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Combat_Branch.prefab",
-                RoomType.Combat, new Vector2(16, 16), new[] { SocketDirection.South, SocketDirection.North, SocketDirection.East }, weight: 0.8f);
+                RoomType.Combat, new Vector2(16, 16), new[] { SocketDirection.South, SocketDirection.North, SocketDirection.East }, weight: 1f);
+
+            GameObject combatBranchWest = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Combat_Branch_West.prefab",
+                RoomType.Combat, new Vector2(16, 16), new[] { SocketDirection.South, SocketDirection.North, SocketDirection.West }, weight: 1f);
+
+            GameObject combatWide = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Combat_Wide.prefab",
+                RoomType.Combat, new Vector2(20, 16), new[] { SocketDirection.South, SocketDirection.North, SocketDirection.East, SocketDirection.West }, weight: 0.6f);
 
             GameObject combatNarrow = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Combat_Narrow.prefab",
                 RoomType.Combat, new Vector2(12, 16), new[] { SocketDirection.South, SocketDirection.North }, weight: 1f);
@@ -39,16 +45,29 @@ namespace RestosDaMasmorra.EditorTools
             GameObject corridor = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Corridor.prefab",
                 RoomType.Corridor, new Vector2(4, 12), new[] { SocketDirection.South, SocketDirection.North }, weight: 1.2f);
 
+            GameObject corridorJunction = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Corridor_Junction.prefab",
+                RoomType.Corridor, new Vector2(4, 12), new[] { SocketDirection.South, SocketDirection.North, SocketDirection.East }, weight: 1f);
+
             GameObject resource = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Resource.prefab",
                 RoomType.Resource, new Vector2(12, 12), new[] { SocketDirection.South }, weight: 0.7f, minDepth: 1);
 
             GameObject deadEnd = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_DeadEnd.prefab",
                 RoomType.DeadEnd, new Vector2(12, 12), new[] { SocketDirection.South }, weight: 0.6f);
 
+            GameObject treasure = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Treasure.prefab",
+                RoomType.Treasure, new Vector2(12, 12), new[] { SocketDirection.South }, weight: 0.5f, minDepth: 2);
+
+            GameObject eventRoom = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Event.prefab",
+                RoomType.Event, new Vector2(12, 12), new[] { SocketDirection.South }, weight: 0.4f, minDepth: 1);
+
             GameObject boss = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Boss.prefab",
                 RoomType.Boss, new Vector2(16, 20), new[] { SocketDirection.South }, canRepeat: false);
 
-            List<GameObject> pool = new List<GameObject> { combatStraight, combatBranch, combatNarrow, corridor, resource, deadEnd };
+            List<GameObject> pool = new List<GameObject>
+            {
+                combatStraight, combatBranch, combatBranchWest, combatWide, combatNarrow,
+                corridor, corridorJunction, resource, deadEnd, treasure, eventRoom
+            };
 
             string defPath = DungeonDefFolder + "PrototypeDungeonDefinition.asset";
             DungeonDefinition definition = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(defPath);

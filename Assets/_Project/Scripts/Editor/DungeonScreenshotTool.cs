@@ -20,6 +20,45 @@ namespace RestosDaMasmorra.EditorTools
             CaptureSeed(47, "Docs/Validation/Dungeon_Overview.png", true);
         }
 
+        public static void CaptureBranchExamples()
+        {
+            DungeonDefinition definition = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(DefinitionPath);
+            if (definition == null)
+            {
+                Debug.LogError($"DungeonScreenshotTool: could not load DungeonDefinition at {DefinitionPath}");
+                return;
+            }
+
+            int? seedNoBranch = null, seedOneBranch = null, seedTwoBranches = null;
+            int bestOverviewSeed = -1;
+            int bestOverviewRooms = -1;
+
+            for (int seed = 1; seed <= 3000; seed++)
+            {
+                DungeonLayoutResult r = DungeonGenerator.Generate(definition, seed);
+                if (!r.Success) continue;
+
+                if (seedNoBranch == null && r.BranchCount == 0) seedNoBranch = seed;
+                if (seedOneBranch == null && r.BranchCount == 1) seedOneBranch = seed;
+                if (seedTwoBranches == null && r.BranchCount == 2) seedTwoBranches = seed;
+
+                if (r.BranchCount == 2 && r.Rooms.Count > bestOverviewRooms)
+                {
+                    bestOverviewRooms = r.Rooms.Count;
+                    bestOverviewSeed = seed;
+                }
+
+                if (seedNoBranch != null && seedOneBranch != null && seedTwoBranches != null && bestOverviewRooms >= 9) break;
+            }
+
+            if (seedNoBranch != null) CaptureSeed(seedNoBranch.Value, "Docs/Validation/Dungeon_NoBranch.png", false);
+            if (seedOneBranch != null) CaptureSeed(seedOneBranch.Value, "Docs/Validation/Dungeon_OneBranch.png", false);
+            if (seedTwoBranches != null) CaptureSeed(seedTwoBranches.Value, "Docs/Validation/Dungeon_TwoBranches.png", false);
+            if (bestOverviewSeed >= 0) CaptureSeed(bestOverviewSeed, "Docs/Validation/Dungeon_Overview.png", true);
+
+            Debug.Log($"CaptureBranchExamples: 0-branch seed={seedNoBranch}, 1-branch seed={seedOneBranch}, 2-branch seed={seedTwoBranches}, overview seed={bestOverviewSeed} ({bestOverviewRooms} rooms).");
+        }
+
         static void CaptureSeed(int seed, string outputPath, bool wideOverview)
         {
             DungeonDefinition definition = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(DefinitionPath);

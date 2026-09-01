@@ -13,19 +13,37 @@ namespace RestosDaMasmorra.Dungeon
         static readonly RoomType[] MainPathTypes = { RoomType.Combat, RoomType.Corridor };
         static readonly RoomType[] BranchTypes = { RoomType.DeadEnd, RoomType.Resource, RoomType.Treasure, RoomType.Event };
 
+        const int MaxAttemptsPerSeed = 8;
+
+        // A given seed always deterministically produces the same sequence of internal
+        // attempts (the same System.Random instance's state is simply carried across
+        // retries, never reset), so the final chosen layout for that seed never changes
+        // between runs — this is what lets a rare geometric dead end (e.g. Boss not
+        // fitting anywhere) be retried without breaking determinism.
         public static DungeonLayoutResult Generate(DungeonDefinition definition, int seed)
         {
-            var result = new DungeonLayoutResult { Seed = seed };
-
             string validationError = ValidateDefinition(definition);
             if (validationError != null)
             {
-                result.Success = false;
-                result.FailureReason = validationError;
-                return result;
+                return new DungeonLayoutResult { Seed = seed, Success = false, FailureReason = validationError };
             }
 
             System.Random rng = new System.Random(seed);
+            DungeonLayoutResult lastResult = null;
+
+            for (int attempt = 0; attempt < MaxAttemptsPerSeed; attempt++)
+            {
+                lastResult = TryGenerateOnce(definition, seed, rng);
+                if (lastResult.Success) return lastResult;
+            }
+
+            return lastResult;
+        }
+
+        static DungeonLayoutResult TryGenerateOnce(DungeonDefinition definition, int seed, System.Random rng)
+        {
+            var result = new DungeonLayoutResult { Seed = seed };
+
             HashSet<GameObject> nonRepeatableUsed = new HashSet<GameObject>();
 
             RoomDefinition entranceDef = definition.EntrancePrefab.GetComponent<RoomDefinition>();
@@ -53,6 +71,11 @@ namespace RestosDaMasmorra.Dungeon
 
             int targetTotalRooms = rng.Next(definition.MinRooms, definition.MaxRooms + 1);
             targetTotalRooms = Math.Max(targetTotalRooms, 2);
+
+            // Reserve room-count headroom for branches: without this, a seed that rolls a
+            // main path all the way up to MaxRooms leaves zero budget left for branches.
+            int mainPathCeiling = Math.Max(definition.MinRooms, definition.MaxRooms - definition.MaxBranches);
+            targetTotalRooms = Math.Min(targetTotalRooms, mainPathCeiling);
             int mainPathBodyCount = Math.Max(0, targetTotalRooms - 2);
 
             PlacedRoom current = entrance;
@@ -88,9 +111,10 @@ namespace RestosDaMasmorra.Dungeon
                 if (!TryPlaceFromCandidates(candidates, current, parentSocket, parentSocketWorld, parentWorldDir,
                         nextDepth, result.Rooms, rng, nonRepeatableUsed, out PlacedRoom placed, out int usedLocalSocketIndex))
                 {
-                    result.FailureReason = $"No room from the pool fit at main-path depth {nextDepth}.";
-                    result.Success = false;
-                    return result;
+                    // Graceful degradation: stop extending the main path here rather than
+                    // failing the whole generation. Boss attachment below will scan every
+                    // still-open socket, so the dungeon still completes validly, just shorter.
+                    break;
                 }
 
                 current.ConnectedSocketIndices.Add(currentSocketIndex);
@@ -150,33 +174,67 @@ namespace RestosDaMasmorra.Dungeon
                 return result;
             }
 
-            RoomSocket[] currentSocketsForBoss = current.Definition.GetSockets();
-            if (currentSocketIndex < 0 || currentSocketIndex >= currentSocketsForBoss.Length)
+            // Build a prioritized list of attachment points for the Boss: the reserved
+            // main-path continuation socket first (keeps the Boss right at the path's end),
+            // then any other open socket on a main-path room (deepest first), then finally
+            // any leftover branch-frontier socket as a last resort. This backtracks across
+            // sockets instead of failing outright when the "natural" end socket collides.
+            List<(PlacedRoom room, int socketIndex)> bossCandidates = new List<(PlacedRoom, int)>();
+            if (currentSocketIndex >= 0 && currentSocketIndex < current.Definition.GetSockets().Length)
+                bossCandidates.Add((current, currentSocketIndex));
+
+            foreach (PlacedRoom room in result.MainPath.OrderByDescending(r => r.Depth))
+            {
+                RoomSocket[] sockets = room.Definition.GetSockets();
+                for (int i = 0; i < sockets.Length; i++)
+                {
+                    if (room.ConnectedSocketIndices.Contains(i)) continue;
+                    if (room == current && i == currentSocketIndex) continue;
+                    bossCandidates.Add((room, i));
+                }
+            }
+
+            foreach (var frontierSlot in branchFrontier.OrderByDescending(f => f.room.Depth))
+            {
+                if (frontierSlot.room.ConnectedSocketIndices.Contains(frontierSlot.socketIndex)) continue;
+                bossCandidates.Add((frontierSlot.room, frontierSlot.socketIndex));
+            }
+
+            PlacedRoom bossPlaced = null;
+            int bossLocalSocketIndex = -1;
+            PlacedRoom bossParentRoom = null;
+            int bossParentSocketIndex = -1;
+
+            foreach ((PlacedRoom room, int socketIndex) candidate in bossCandidates)
+            {
+                RoomSocket[] roomSockets = candidate.room.Definition.GetSockets();
+                RoomSocket parentSocket = roomSockets[candidate.socketIndex];
+                Vector3 parentWorld = candidate.room.SocketWorldPosition(parentSocket);
+                SocketDirection parentDir = candidate.room.SocketWorldDirection(parentSocket);
+                int depth = candidate.room.Depth + 1;
+
+                if (TryPlaceFromCandidates(new List<GameObject> { definition.BossPrefab }, candidate.room, parentSocket,
+                        parentWorld, parentDir, depth, result.Rooms, rng, nonRepeatableUsed,
+                        out bossPlaced, out bossLocalSocketIndex))
+                {
+                    bossParentRoom = candidate.room;
+                    bossParentSocketIndex = candidate.socketIndex;
+                    break;
+                }
+            }
+
+            if (bossPlaced == null)
             {
                 result.Success = false;
-                result.FailureReason = "No open socket available to attach the Boss room.";
+                result.FailureReason = "Boss room does not fit anywhere along the generated layout (overlap).";
                 return result;
             }
 
-            RoomSocket bossParentSocket = currentSocketsForBoss[currentSocketIndex];
-            Vector3 bossParentWorld = current.SocketWorldPosition(bossParentSocket);
-            SocketDirection bossParentDir = current.SocketWorldDirection(bossParentSocket);
-            int bossDepth = current.Depth + 1;
-
-            if (!TryPlaceFromCandidates(new List<GameObject> { definition.BossPrefab }, current, bossParentSocket,
-                    bossParentWorld, bossParentDir, bossDepth, result.Rooms, rng, nonRepeatableUsed,
-                    out PlacedRoom bossPlaced, out int bossLocalSocketIndex))
-            {
-                result.Success = false;
-                result.FailureReason = "Boss room does not fit at the end of the main path (overlap).";
-                return result;
-            }
-
-            current.ConnectedSocketIndices.Add(currentSocketIndex);
+            bossParentRoom.ConnectedSocketIndices.Add(bossParentSocketIndex);
             bossPlaced.ConnectedSocketIndices.Add(bossLocalSocketIndex);
-            current.Connections.Add((currentSocketIndex, bossPlaced, bossLocalSocketIndex));
-            bossPlaced.Connections.Add((bossLocalSocketIndex, current, currentSocketIndex));
-            bossPlaced.Depth = bossDepth;
+            bossParentRoom.Connections.Add((bossParentSocketIndex, bossPlaced, bossLocalSocketIndex));
+            bossPlaced.Connections.Add((bossLocalSocketIndex, bossParentRoom, bossParentSocketIndex));
+            bossPlaced.Depth = bossParentRoom.Depth + 1;
             bossPlaced.IsMainPath = true;
             result.Rooms.Add(bossPlaced);
             result.MainPath.Add(bossPlaced);
@@ -223,6 +281,10 @@ namespace RestosDaMasmorra.Dungeon
 
                 result.Rooms.Add(branchRoom);
                 branchesPlaced++;
+
+                // Bias the distribution towards "usually one branch, sometimes two" rather
+                // than always greedily filling every available slot up to MaxBranches.
+                if (branchesPlaced < definition.MaxBranches && rng.NextDouble() < 0.45) break;
             }
 
             result.BranchCount = branchesPlaced;
