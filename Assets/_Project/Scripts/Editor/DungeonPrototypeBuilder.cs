@@ -18,12 +18,49 @@ namespace RestosDaMasmorra.EditorTools
         const string DungeonDefFolder = "Assets/_Project/ScriptableObjects/Dungeon/";
         const string PlayerPrefabPath = "Assets/_Project/Prefabs/Characters/Player.prefab";
 
+        // Rebuilds only the room prefab visuals (floor/walls/decor), overwriting them
+        // in-place at the same asset paths -- GUIDs stay stable, so PrototypeDungeonDefinition
+        // and PrototypeDungeon.unity (which reference these prefabs, not their contents)
+        // don't need to change and Phase C's party/enemy config on DungeonRuntimeSpawner is
+        // untouched. Use this instead of BuildAll() for a visual-only pass.
+        public static void RebuildRoomVisualsOnly()
+        {
+            AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
+            Directory.CreateDirectory(RoomsFolder);
+            BuildRoomPrefabs();
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("DungeonPrototypeBuilder: RebuildRoomVisualsOnly complete.");
+        }
+
         public static void BuildAll()
         {
             AssetDatabase.Refresh(ImportAssetOptions.ForceUpdate);
             Directory.CreateDirectory(RoomsFolder);
             Directory.CreateDirectory(DungeonDefFolder);
 
+            (GameObject entrance, GameObject boss, List<GameObject> pool) = BuildRoomPrefabs();
+
+            string defPath = DungeonDefFolder + "PrototypeDungeonDefinition.asset";
+            DungeonDefinition definition = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(defPath);
+            if (definition == null)
+            {
+                definition = ScriptableObject.CreateInstance<DungeonDefinition>();
+                AssetDatabase.CreateAsset(definition, defPath);
+            }
+            definition.EditorConfigure("prototype_dungeon", 6, 10, 2, "Dungeon", entrance, boss, pool);
+            EditorUtility.SetDirty(definition);
+            AssetDatabase.SaveAssets();
+
+            RebuildPrototypeDungeonScene(definition);
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+            Debug.Log("DungeonPrototypeBuilder: BuildAll complete.");
+        }
+
+        static (GameObject entrance, GameObject boss, List<GameObject> pool) BuildRoomPrefabs()
+        {
             GameObject entrance = RoomPrefabFactory.BuildRoom(RoomsFolder + "Room_Entrance.prefab",
                 RoomType.Entrance, new Vector2(12, 12), new[] { SocketDirection.North });
 
@@ -69,22 +106,7 @@ namespace RestosDaMasmorra.EditorTools
                 corridor, corridorJunction, resource, deadEnd, treasure, eventRoom
             };
 
-            string defPath = DungeonDefFolder + "PrototypeDungeonDefinition.asset";
-            DungeonDefinition definition = AssetDatabase.LoadAssetAtPath<DungeonDefinition>(defPath);
-            if (definition == null)
-            {
-                definition = ScriptableObject.CreateInstance<DungeonDefinition>();
-                AssetDatabase.CreateAsset(definition, defPath);
-            }
-            definition.EditorConfigure("prototype_dungeon", 6, 10, 2, "Dungeon", entrance, boss, pool);
-            EditorUtility.SetDirty(definition);
-            AssetDatabase.SaveAssets();
-
-            RebuildPrototypeDungeonScene(definition);
-
-            AssetDatabase.SaveAssets();
-            AssetDatabase.Refresh();
-            Debug.Log("DungeonPrototypeBuilder: BuildAll complete.");
+            return (entrance, boss, pool);
         }
 
         static void RebuildPrototypeDungeonScene(DungeonDefinition definition)

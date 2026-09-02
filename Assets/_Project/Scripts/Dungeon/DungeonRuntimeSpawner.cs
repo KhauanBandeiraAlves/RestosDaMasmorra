@@ -6,6 +6,7 @@ using RestosDaMasmorra.Characters;
 using RestosDaMasmorra.Core;
 using RestosDaMasmorra.Enemies;
 using RestosDaMasmorra.Items;
+using RestosDaMasmorra.Player;
 
 namespace RestosDaMasmorra.Dungeon
 {
@@ -85,6 +86,22 @@ namespace RestosDaMasmorra.Dungeon
             BakeNavMesh();
             SpawnParty(spawnPos, actualSeed);
             SpawnEnemies(actualSeed);
+            SetupRoomCameraTracking();
+        }
+
+        // Keeps the camera clamped to whichever room the player is currently standing in
+        // (see RoomCameraTracker) instead of revealing the whole generated layout at once.
+        void SetupRoomCameraTracking()
+        {
+            if (playerTransform == null) return;
+
+            Camera cam = Camera.main;
+            IsoCameraFollow follow = cam != null ? cam.GetComponent<IsoCameraFollow>() : null;
+            if (follow == null) return;
+
+            RoomCameraTracker tracker = GetComponent<RoomCameraTracker>();
+            if (tracker == null) tracker = gameObject.AddComponent<RoomCameraTracker>();
+            tracker.Configure(this, playerTransform, follow);
         }
 
         void BakeNavMesh()

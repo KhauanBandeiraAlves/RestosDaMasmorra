@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using RestosDaMasmorra.Core;
 using RestosDaMasmorra.Economy;
 using RestosDaMasmorra.Items;
+using RestosDaMasmorra.Player;
 using RestosDaMasmorra.UI;
 
 namespace RestosDaMasmorra.EditorTools
@@ -22,6 +23,10 @@ namespace RestosDaMasmorra.EditorTools
         const string ItemsFolder = "Assets/_Project/ScriptableObjects/Items/";
         const string EconomyFolder = "Assets/_Project/ScriptableObjects/Crafting/";
         const string PlayerPrefabPath = "Assets/_Project/Prefabs/Characters/Player.prefab";
+        const float Tile = 4f;
+        const float WallThickness = 1f;
+        const float RoomWidth = 20f;
+        const float RoomDepth = 20f;
 
         public static void BuildAll()
         {
@@ -116,29 +121,45 @@ namespace RestosDaMasmorra.EditorTools
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
-            GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            ground.name = "Ground";
-            ground.transform.position = new Vector3(0f, -0.5f, 0f);
-            ground.transform.localScale = new Vector3(24f, 1f, 24f);
+            float halfW = RoomWidth * 0.5f;
+            float halfD = RoomDepth * 0.5f;
+
+            GameObject roomRoot = new GameObject("Room");
+            BuildBaseFloor(roomRoot.transform);
+            BuildBaseWalls(roomRoot.transform);
+            AddMeshColliders(roomRoot);
+
+            GameObject bootLoggerGO = new GameObject("SceneBootLogger");
+            SceneBootLogger bootLogger = bootLoggerGO.AddComponent<SceneBootLogger>();
+            SetPrivateField(bootLogger, "sceneLabel", "PROTOTYPE BASE");
 
             GameObject playerInstance = (GameObject)PrefabUtility.InstantiatePrefab(playerPrefab);
-            playerInstance.transform.position = new Vector3(0f, 0.1f, -4f);
+            playerInstance.transform.position = new Vector3(0f, 0.1f, -halfD + 4f);
 
-            // Dungeon entrance portal.
+            // Dungeon entrance portal -- the opening is the doorway punched in the middle of
+            // the north wall by BuildBaseWalls.
             GameObject portalGO = new GameObject("DungeonEntrance");
-            portalGO.transform.position = new Vector3(0f, 0.5f, 4f);
+            portalGO.transform.position = new Vector3(0f, 0.5f, halfD - 1.5f);
             BoxCollider portalCollider = portalGO.AddComponent<BoxCollider>();
             portalCollider.isTrigger = true;
-            portalCollider.size = new Vector3(2f, 2f, 2f);
+            portalCollider.size = new Vector3(3f, 2f, 2f);
             ScenePortal portal = portalGO.AddComponent<ScenePortal>();
             portal.Configure("PrototypeDungeon", "Entrar na Dungeon");
-            SpawnVisual(Dungeon + "wall_doorway.fbx", portalGO.transform, Vector3.zero, 0f);
 
             SetupLightingAndCameraLocal(playerInstance.transform, out Canvas canvas);
             PrototypeSceneBuilder.WirePlayerHud(canvas, playerInstance);
+            BuildHelpText(canvas);
+
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                Bounds roomBounds = new Bounds(new Vector3(0f, 2f, 0f), new Vector3(RoomWidth, 4f, RoomDepth));
+                FixedRoomBounds fixedBounds = mainCam.gameObject.AddComponent<FixedRoomBounds>();
+                fixedBounds.Configure(roomBounds);
+            }
 
             // Storage.
-            GameObject storageGO = SpawnVisual(Dungeon + "chest_gold.fbx", null, new Vector3(-5f, 0f, -1f), 0f);
+            GameObject storageGO = SpawnVisual(Dungeon + "chest_gold.fbx", null, new Vector3(-6f, 0f, 4f), 0f);
             storageGO.name = "Storage";
             SphereCollider storageCollider = storageGO.AddComponent<SphereCollider>();
             storageCollider.isTrigger = true;
@@ -148,7 +169,7 @@ namespace RestosDaMasmorra.EditorTools
             storageInteractable.Configure(storageUI);
 
             // Dismantling bench.
-            GameObject benchGO = SpawnVisual(Dungeon + "table_medium.fbx", null, new Vector3(5f, 0f, -1f), 0f);
+            GameObject benchGO = SpawnVisual(Dungeon + "table_medium.fbx", null, new Vector3(6f, 0f, 4f), 0f);
             benchGO.name = "DismantlingBench";
             SphereCollider benchCollider = benchGO.AddComponent<SphereCollider>();
             benchCollider.isTrigger = true;
@@ -157,9 +178,122 @@ namespace RestosDaMasmorra.EditorTools
             DismantlingBench bench = benchGO.AddComponent<DismantlingBench>();
             bench.Configure(recipes, dismantlingUI);
 
+            // Simple decorative props -- functional readability, not decoration for its own sake.
+            SpawnVisual(Dungeon + "torch_mounted.fbx", null, new Vector3(-4f, 1.5f, halfD - 0.5f), 180f);
+            SpawnVisual(Dungeon + "torch_mounted.fbx", null, new Vector3(4f, 1.5f, halfD - 0.5f), 180f);
+            SpawnVisual(Dungeon + "barrel_large.fbx", null, new Vector3(-halfW + 2f, 0f, -halfD + 2f), 0f);
+            SpawnVisual(Dungeon + "barrel_large.fbx", null, new Vector3(halfW - 2f, 0f, -halfD + 2f), 0f);
+
             Directory.CreateDirectory("Assets/_Project/Scenes");
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene, "Assets/_Project/Scenes/PrototypeBase.unity");
+        }
+
+        static void BuildBaseFloor(Transform parent)
+        {
+            int tilesX = Mathf.RoundToInt(RoomWidth / Tile);
+            int tilesZ = Mathf.RoundToInt(RoomDepth / Tile);
+            float halfW = RoomWidth * 0.5f;
+            float halfD = RoomDepth * 0.5f;
+
+            GameObject floorRoot = new GameObject("Floor");
+            floorRoot.transform.SetParent(parent, false);
+            for (int x = 0; x < tilesX; x++)
+            {
+                for (int z = 0; z < tilesZ; z++)
+                {
+                    Vector3 pos = new Vector3(-halfW + x * Tile, 0f, -halfD + z * Tile);
+                    SpawnVisual(Dungeon + "floor_tile_large.fbx", floorRoot.transform, pos, 0f);
+                }
+            }
+        }
+
+        // Perimeter walls out of the KayKit Dungeon pack, same wall.fbx/wall_doorway.fbx
+        // pieces RoomPrefabFactory uses for procedural rooms, for a consistent look. Only
+        // the north wall gets a doorway (the dungeon entrance) -- the workshop is otherwise
+        // fully enclosed.
+        static void BuildBaseWalls(Transform parent)
+        {
+            int tilesX = Mathf.RoundToInt(RoomWidth / Tile);
+            int tilesZ = Mathf.RoundToInt(RoomDepth / Tile);
+            float halfW = RoomWidth * 0.5f;
+            float halfD = RoomDepth * 0.5f;
+
+            GameObject wallsRoot = new GameObject("Walls");
+            wallsRoot.transform.SetParent(parent, false);
+
+            BuildWallRun(wallsRoot.transform, tilesX, false, i => new Vector3(-halfW + i * Tile, 0f, -halfD), 0f);
+            BuildWallRun(wallsRoot.transform, tilesX, true, i => new Vector3(-halfW + i * Tile, 0f, halfD - WallThickness), 180f);
+            BuildWallRun(wallsRoot.transform, tilesZ, false, i => new Vector3(-halfW, 0f, -halfD + i * Tile), 90f);
+            BuildWallRun(wallsRoot.transform, tilesZ, false, i => new Vector3(halfW - WallThickness, 0f, -halfD + i * Tile), -90f);
+        }
+
+        static void BuildWallRun(Transform parent, int segmentCount, bool hasDoor, System.Func<int, Vector3> positionAt, float yaw)
+        {
+            int doorIndex = hasDoor ? segmentCount / 2 : -1;
+            for (int i = 0; i < segmentCount; i++)
+            {
+                string piece = i == doorIndex ? "wall_doorway.fbx" : "wall.fbx";
+                SpawnVisual(Dungeon + piece, parent, positionAt(i), yaw);
+            }
+        }
+
+        static void BuildHelpText(Canvas canvas)
+        {
+            GameObject helpGO = new GameObject("HelpText");
+            helpGO.transform.SetParent(canvas.transform, false);
+            RectTransform rect = helpGO.AddComponent<RectTransform>();
+            rect.anchorMin = new Vector2(0.5f, 0f);
+            rect.anchorMax = new Vector2(0.5f, 0f);
+            rect.pivot = new Vector2(0.5f, 0f);
+            rect.anchoredPosition = new Vector2(0f, 24f);
+            rect.sizeDelta = new Vector2(420f, 90f);
+
+            Text text = helpGO.AddComponent<Text>();
+            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            text.fontSize = 20;
+            text.alignment = TextAnchor.MiddleCenter;
+            text.color = Color.white;
+            text.raycastTarget = false;
+            text.text = "WASD - Mover\nShift - Correr\nE - Interagir";
+
+            helpGO.AddComponent<CanvasGroup>();
+            helpGO.AddComponent<HelpTextHint>();
+        }
+
+        // The floor/wall FBX prefabs carry no colliders of their own (unlike the old
+        // primitive-cube Ground, which got a BoxCollider for free) -- without this, the
+        // Player's CharacterController falls straight through on Start and the room never
+        // renders anything because it's no longer anywhere near the camera.
+        static void AddMeshColliders(GameObject root)
+        {
+            foreach (MeshFilter mf in root.GetComponentsInChildren<MeshFilter>())
+            {
+                if (mf.sharedMesh == null) continue;
+                if (mf.GetComponent<Collider>() != null) continue;
+                MeshCollider mc = mf.gameObject.AddComponent<MeshCollider>();
+                mc.sharedMesh = mf.sharedMesh;
+            }
+        }
+
+        static void SetPrivateField(Object target, string fieldName, object value)
+        {
+            SerializedObject so = new SerializedObject(target);
+            SerializedProperty prop = so.FindProperty(fieldName);
+            if (prop == null)
+            {
+                Debug.LogError($"PhaseDBuilder: field '{fieldName}' not found on {target.GetType().Name}");
+                return;
+            }
+            switch (prop.propertyType)
+            {
+                case SerializedPropertyType.String: prop.stringValue = (string)value; break;
+                case SerializedPropertyType.Float: prop.floatValue = (float)value; break;
+                case SerializedPropertyType.Integer: prop.intValue = (int)value; break;
+                case SerializedPropertyType.Boolean: prop.boolValue = (bool)value; break;
+                default: Debug.LogError($"PhaseDBuilder: unsupported field type for '{fieldName}'"); break;
+            }
+            so.ApplyModifiedPropertiesWithoutUndo();
         }
 
         static GameObject SpawnVisual(string path, Transform parent, Vector3 localOrWorldPos, float yaw)

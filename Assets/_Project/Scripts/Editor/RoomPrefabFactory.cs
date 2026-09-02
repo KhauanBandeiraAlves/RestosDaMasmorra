@@ -79,10 +79,80 @@ namespace RestosDaMasmorra.EditorTools
                 i => new Vector3(halfW - WallThickness, 0f, -halfD + i * Tile), -90f,
                 root, SocketDirection.East, halfW, halfD);
 
+            DecorateRoom(root, roomType, size);
+
             Directory.CreateDirectory(Path.GetDirectoryName(savePath));
             GameObject prefab = PrefabUtility.SaveAsPrefabAsset(root, savePath);
             Object.DestroyImmediate(root);
             return prefab;
+        }
+
+        // Light per-RoomType prop variation so rooms read as different spaces (treasure vs
+        // combat vs corridor) without needing unique art per room. Kept away from the door
+        // gaps (wall midpoints) and the room center so nothing blocks the walkable path or
+        // NavMesh. Deliberately sparse -- functional readability, not decoration for its
+        // own sake.
+        static void DecorateRoom(GameObject root, RoomType roomType, Vector2 size)
+        {
+            float halfW = size.x * 0.5f;
+            float halfD = size.y * 0.5f;
+            const float inset = 2f;
+
+            GameObject decorRoot = new GameObject("Decor");
+            decorRoot.transform.SetParent(root.transform, false);
+
+            switch (roomType)
+            {
+                case RoomType.Entrance:
+                    SpawnDecor(Dungeon + "torch_mounted.fbx", decorRoot.transform, new Vector3(-halfW + 0.5f, 1.5f, halfD - inset), 90f);
+                    SpawnDecor(Dungeon + "torch_mounted.fbx", decorRoot.transform, new Vector3(halfW - 0.5f, 1.5f, halfD - inset), -90f);
+                    break;
+
+                case RoomType.Combat:
+                    SpawnDecor(Dungeon + "barrel_large.fbx", decorRoot.transform, new Vector3(-halfW + inset, 0f, -halfD + inset), 0f);
+                    SpawnDecor(Dungeon + "barrel_large.fbx", decorRoot.transform, new Vector3(halfW - inset, 0f, halfD - inset), 0f);
+                    break;
+
+                case RoomType.Corridor:
+                    SpawnDecor(Dungeon + "torch_mounted.fbx", decorRoot.transform, new Vector3(-halfW + 0.5f, 1.5f, 0f), 90f);
+                    break;
+
+                case RoomType.Resource:
+                    SpawnDecor(Dungeon + "crates_stacked.fbx", decorRoot.transform, new Vector3(-halfW + inset, 0f, -halfD + inset), 0f);
+                    SpawnDecor(Dungeon + "barrel_large.fbx", decorRoot.transform, new Vector3(-halfW + inset + 1.5f, 0f, -halfD + inset), 0f);
+                    break;
+
+                case RoomType.Treasure:
+                    SpawnDecor(Dungeon + "chest_gold.fbx", decorRoot.transform, new Vector3(0f, 0f, halfD - inset), 0f);
+                    break;
+
+                case RoomType.Event:
+                    SpawnDecor(Dungeon + "torch_lit.fbx", decorRoot.transform, new Vector3(halfW - inset, 0f, halfD - inset), 0f);
+                    SpawnDecor(Dungeon + "table_small.fbx", decorRoot.transform, new Vector3(halfW - inset - 1.5f, 0f, halfD - inset), 0f);
+                    break;
+
+                case RoomType.Boss:
+                    SpawnDecor(Dungeon + "pillar_decorated.fbx", decorRoot.transform, new Vector3(-halfW + inset, 0f, -halfD + inset), 0f);
+                    SpawnDecor(Dungeon + "pillar_decorated.fbx", decorRoot.transform, new Vector3(halfW - inset, 0f, -halfD + inset), 0f);
+                    break;
+
+                case RoomType.DeadEnd:
+                    SpawnDecor(Dungeon + "rubble_large.fbx", decorRoot.transform, new Vector3(0f, 0f, halfD - inset), 0f);
+                    break;
+            }
+        }
+
+        static void SpawnDecor(string path, Transform parent, Vector3 localPos, float yaw)
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(path);
+            if (prefab == null)
+            {
+                Debug.LogWarning($"RoomPrefabFactory: missing decor asset at {path}");
+                return;
+            }
+            GameObject inst = (GameObject)PrefabUtility.InstantiatePrefab(prefab, parent);
+            inst.transform.localPosition = localPos;
+            inst.transform.localRotation = Quaternion.Euler(0f, yaw, 0f);
         }
 
         static void BuildWallRun(Transform parent, int segmentCount, bool hasDoor, System.Func<int, Vector3> positionAt, float yaw, GameObject roomRoot, SocketDirection side, float halfW, float halfD)

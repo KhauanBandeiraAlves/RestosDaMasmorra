@@ -34,6 +34,17 @@ namespace RestosDaMasmorra.Dungeon
             return new Rect(Position.x - size.x * 0.5f, Position.z - size.y * 0.5f, size.x, size.y);
         }
 
+        // 3D bounds for camera room-clamping (see IsoCameraFollow.SetRoomBounds). Height
+        // isn't tracked per-room today, so this takes the same wall height DungeonSceneBuilder
+        // builds with as a default.
+        public Bounds WorldBounds(float height = 4f)
+        {
+            Rect rect = WorldRect();
+            return new Bounds(
+                new Vector3(rect.center.x, height * 0.5f, rect.center.y),
+                new Vector3(rect.width, height, rect.height));
+        }
+
         public Vector3 SocketWorldPosition(RoomSocket socket)
         {
             Vector3 rotatedLocal = Quaternion.AngleAxis(YawDegrees, Vector3.up) * socket.transform.localPosition;
